@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GadgiTech Command Hub</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --bg:#0a0f0d; --panel:#0f1713; --panel2:#121d18; --line:#1e2f27;
+    --text:#dfeee6; --muted:#7fa896; --accent:#39d98a; --accent2:#2ba8ff;
+    --warn:#e8b339; --bad:#e85d5d; --good:#39d98a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+  a{color:var(--accent2)}
+  #gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .gatebox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px;max-width:380px;width:100%;text-align:center}
+  .gatebox h1{font-size:18px;margin:0 0 6px;color:var(--accent)}
+  .gatebox p{color:var(--muted);margin:0 0 18px;font-size:13px}
+  .gatebox input{width:100%;padding:12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:15px;margin-bottom:10px}
+  .gatebox button{width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#04150c;font-weight:600;font-size:15px;cursor:pointer}
+  .gatebox button:hover{opacity:.9}
+  .gateerr{color:var(--bad);font-size:12px;min-height:16px;margin-top:8px}
+  #app{display:none}
+  header{position:sticky;top:0;background:rgba(10,15,13,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;z-index:10}
+  header h1{font-size:16px;margin:0;color:var(--accent);letter-spacing:.02em}
+  header .sub{color:var(--muted);font-size:12px}
+  .lockbtn{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px}
+  nav{display:flex;gap:6px;padding:12px 20px 0;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+  nav button{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:8px 14px;border-radius:20px;font-size:13px;cursor:pointer}
+  nav button.active{background:var(--accent);color:#04150c;border-color:var(--accent);font-weight:600}
+  main{max-width:1200px;margin:0 auto;padding:18px 20px 60px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .tile .n{font-size:26px;font-weight:700;color:var(--accent)}
+  .tile .l{color:var(--muted);font-size:12px;margin-top:4px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  .card h3{margin:0 0 10px;font-size:14px;color:var(--accent2)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.04em}
+  .pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+  .pill.pending{background:#3a2f0f;color:var(--warn)}
+  .pill.approved{background:#0f3a24;color:var(--good)}
+  .pill.rejected{background:#3a1414;color:var(--bad)}
+  .btnrow{display:flex;gap:6px}
+  .btn{border:none;border-radius:6px;padding:5px 10px;font-size:11.5px;cursor:pointer;font-weight:600}
+  .btn.ok{background:var(--good);color:#04150c}
+  .btn.no{background:var(--bad);color:#1a0505}
+  .muted{color:var(--muted)}
+  .linkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .linkcard{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .linkcard .t{font-weight:700;font-size:13px;margin-bottom:3px}
+  .linkcard .d{color:var(--muted);font-size:11.5px;line-height:1.4;margin-bottom:8px}
+  .status{font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+  .status.live{color:var(--good)}
+  .status.laptop{color:var(--accent2)}
+  .status.manual{color:var(--warn)}
+  .empty{color:var(--muted);font-style:italic;padding:10px 0}
+  .err{color:var(--bad);font-size:12px}
+  code{background:#00120b;border:1px solid var(--line);padding:2px 5px;border-radius:4px;font-size:11.5px}
+  footer{text-align:center;color:var(--muted);font-size:11px;padding:20px;opacity:.6}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gatebox">
+    <h1>GadgiTech Command Hub</h1>
+    <p>Owner-only. Enter the hub key to continue.<br>Never shared, never leaves this device except as a request header.</p>
+    <input id="keyInput" type="password" placeholder="hub key" autocomplete="off">
+    <button id="unlockBtn">Unlock</button>
+    <div class="gateerr" id="gateErr"></div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div>
+      <h1>GadgiTech Command Hub</h1>
+      <div class="sub">One place for the whole build — approvals, revenue, ideas, workflows, and every other hub/repo/dashboard in the stack.</div>
+    </div>
+    <button class="lockbtn" id="lockBtn">Lock</button>
+  </header>
+  <nav id="tabs"></nav>
+  <main id="main"></main>
+  <footer>Private. Read-only tabs via <code>hub-read</code>; approve/deny via <code>hub-api</code>. Money-moving and publish actions still require your explicit approval here — nothing auto-fires.</footer>
+</div>
+
+<script>
+const FN_BASE = "https://gjyisxcrvknsqyzseost.supabase.co/functions/v1";
+const READ_URL = FN_BASE + "/hub-read";
+const API_URL  = FN_BASE + "/hub-api";
+const KEY_STORE = "gadgitech_hub_key";
+
+const TABS = [
+  {id:"overview", label:"Overview"},
+  {id:"approvals", label:"Approvals"},
+  {id:"finances", label:"Finances"},
+  {id:"ideas", label:"Ideas"},
+  {id:"projects", label:"Projects"},
+  {id:"workflows", label:"Workflows"},
+  {id:"logs", label:"Logs"},
+  {id:"agents", label:"Agents"},
+  {id:"vps", label:"VPS"},
+  {id:"data", label:"Data"},
+  {id:"roundtable", label:"Round Table"},
+  {id:"social", label:"Social"},
+  {id:"marketing", label:"Marketing"},
+  {id:"vault", label:"Vault"},
+  {id:"systems", label:"Systems Map"},
+  {id:"orchestrator", label:"Orchestrator"},
+];
+
+let hubKey = localStorage.getItem(KEY_STORE) || "";
+let activeTab = "overview";
+
+function $(sel, root){ return (root||document).querySelector(sel); }
+
+async function hubReadFetch(tab){
+  const res = await fetch(READ_URL + "/" + tab, { headers: { "x-hub-key": hubKey } });
+  if (res.status === 401) throw new Error("unauthorized");
+  if (!res.ok) throw new Error("hub-read " + res.status);
+  return res.json();
+}
+async function hubApiCall(body){
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "x-hub-key": hubKey, "content-type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  if (res.status === 401) throw new Error("unauthorized");
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(j.error || ("hub-api " + res.status));
+  return j;
+}
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtDate(d){ if(!d) return ""; try { return new Date(d).toLocaleString(); } catch(e){ return d; } }
+
+async function unlock(){
+  const val = $("#keyInput").value.trim();
+  if (!val) return;
+  hubKey = val;
+  $("#gateErr").textContent = "Checking...";
+  try {
+    await hubReadFetch("overview");
+    localStorage.setItem(KEY_STORE, hubKey);
+    $("#gate").style.display = "none";
+    $("#app").style.display = "block";
+    renderTabs();
+    loadTab(activeTab);
+  } catch (e) {
+    $("#gateErr").textContent = "Wrong key, or hub-read isn't reachable. Try again.";
+  }
+}
+
+function lock(){
+  localStorage.removeItem(KEY_STORE);
+  hubKey = "";
+  location.reload();
+}
+
+function renderTabs(){
+  const nav = $("#tabs");
+  nav.innerHTML = "";
+  TABS.forEach(t => {
+    const b = document.createElement("button");
+    b.textContent = t.label;
+    b.className = t.id === activeTab ? "active" : "";
+    b.onclick = () => { activeTab = t.id; renderTabs(); loadTab(t.id); };
+    nav.appendChild(b);
+  });
+}
+
+async function loadTab(id){
+  const main = $("#main");
+  main.innerHTML = '<div class="empty">Loading ' + esc(id) + '…</div>';
+  try {
+    if (id === "systems") return renderSystems(main);
+    const data = await hubReadFetch(id);
+    if (id === "overview") return renderOverview(main, data);
+    if (id === "approvals") return renderApprovals(main, data);
+    if (id === "finances") return renderFinances(main, data);
+    if (id === "ideas") return renderRows(main, "Ideas", data.rows, ["id","title","status","created_date"]);
+    if (id === "projects") return renderRows(main, "Income Loops / Projects", data.rows, ["id","name","status","updated_date"]);
+    if (id === "workflows") return renderWorkflows(main, data);
+    if (id === "logs") return renderLogs(main, data);
+    if (id === "agents") return renderAgents(main, data);
+    if (id === "vps") return renderVps(main, data);
+    if (id === "data") return renderData(main, data);
+    if (id === "roundtable") return renderRoundtable(main, data);
+    if (id === "social") return renderRows(main, "Social account profiles", data.rows, ["platform","handle","status","updated_date"]);
+    if (id === "marketing") return renderMarketing(main, data);
+    if (id === "vault") return renderVault(main, data);
+    if (id === "orchestrator") return renderOrchestrator(main, data);
+    main.innerHTML = '<div class="empty">Unknown tab.</div>';
+  } catch (e) {
+    if (String(e.message).includes("unauthorized")) { lock(); return; }
+    main.innerHTML = '<div class="card"><div class="err">Could not load this tab: ' + esc(e.message) + '</div></div>';
+  }
+}
+
+function renderOverview(main, data){
+  const counts = data.counts || {};
+  const labels = {
+    b44_incomeloop: "Income Loops", b44_productqueue: "Product Queue", b44_affiliatelink: "Affiliate Links",
+    b44_opportunitylead: "Opportunity Leads", field_manual_guides: "Field Manual Guides",
+    gadgitech_marketing_queue: "Marketing Queue", gadgitech_orders: "Orders", field_manual_sales: "Guide Sales"
+  };
+  let html = '<div class="grid">';
+  Object.keys(labels).forEach(k => {
+    html += '<div class="tile"><div class="n">' + esc(counts[k] ?? "–") + '</div><div class="l">' + esc(labels[k]) + '</div></div>';
+  });
+  html += '</div>';
+  html += '<div class="card"><h3>What this is</h3><p class="muted" style="margin:0">Live counts straight from Supabase (project gjyisxcrvknsqyzseost) via the read-only <code>hub-read</code> function. Orders/Sales at 0 means no completed Stripe payments have landed yet — check the Stripe dashboard in Systems Map if you expect otherwise.</p></div>';
+  main.innerHTML = html;
+}
+
+function renderApprovals(main, data){
+  const rows = data.rows || [];
+  if (!rows.length) { main.innerHTML = '<div class="card"><h3>Approvals</h3><div class="empty">Nothing pending.</div></div>'; return; }
+  let html = '<div class="card"><h3>Marketing queue — pending approval (' + rows.length + ')</h3><table><thead><tr><th>ID</th><th>Platform</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody>';
+  rows.forEach(r => {
+    html += '<tr id="row-' + r.id + '"><td>' + esc(r.id) + '</td><td>' + esc(r.platform) + '</td><td><span class="pill ' + esc(r.status) + '">' + esc(r.status) + '</span></td><td>' + fmtDate(r.created_at) + '</td>' +
+      '<td><div class="btnrow"><button class="btn ok" onclick="decide(' + r.id + ',\'approved\')">Approve</button><button class="btn no" onclick="decide(' + r.id + ',\'denied\')">Deny</button></div></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  main.innerHTML = html;
+}
+
+window.decide = async function(id, decision){
+  const row = document.getElementById("row-" + id);
+  if (row) row.style.opacity = 0.4;
+  try {
+    await hubApiCall({ action: "action", table: "gadgitech_marketing_queue", id, decision });
+    loadTab("approvals");
+  } catch (e) {
+    alert("Failed: " + e.message);
+    if (row) row.style.opacity = 1;
+  }
+};
+
+function renderFinances(main, data){
+  let html = '<div class="grid">' +
+    '<div class="tile"><div class="n">' + esc(data.orders_count ?? 0) + '</div><div class="l">Orders</div></div>' +
+    '<div class="tile"><div class="n">' + esc(data.sales_count ?? 0) + '</div><div class="l">Guide Sales</div></div>' +
+    '</div>';
+  html += renderTableCard("Recent Orders", data.recent_orders, ["id","payment_intent","product_category","amount_total","created_at"]);
+  html += renderTableCard("Recent Guide Sales", data.recent_sales, ["order_id","guide_id","customer_email","amount_total","paid_at"]);
+  main.innerHTML = html;
+}
+
+function renderTableCard(title, rows, cols){
+  rows = rows || [];
+  if (!rows.length) return '<div class="card"><h3>' + esc(title) + '</h3><div class="empty">No rows yet.</div></div>';
+  let html = '<div class="card"><h3>' + esc(title) + '</h3><table><thead><tr>' + cols.map(c=>'<th>'+esc(c)+'</th>').join('') + '</tr></thead><tbody>';
+  rows.forEach(r => { html += '<tr>' + cols.map(c => '<td>' + esc(typeof r[c]==='object'?JSON.stringify(r[c]):r[c]) + '</td>').join('') + '</tr>'; });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderRows(main, title, rows, cols){
+  main.innerHTML = renderTableCard(title, rows, cols);
+}
+
+function renderWorkflows(main, data){
+  const wf = data.workflows || [];
+  let html = '<div class="card"><h3>n8n workflows (gmcgarrettcarr.app.n8n.cloud)</h3><table><thead><tr><th>WF</th><th>Purpose</th><th>Fires</th><th>Auto-publish</th></tr></thead><tbody>';
+  wf.forEach(w => { html += '<tr><td>' + esc(w.wf) + '</td><td>' + esc(w.purpose) + '</td><td>' + esc(w.fires) + '</td><td>' + (w.auto_publish ? '<span class="pill approved">yes</span>' : '<span class="pill pending">gate/guard</span>') + '</td></tr>'; });
+  html += '</tbody></table><p class="muted" style="margin-top:10px">' + esc(data.note||"") + ' — open n8n directly to trigger/edit a run (link in Systems Map).</p></div>';
+  main.innerHTML = html;
+}
+
+function renderLogs(main, data){
+  main.innerHTML = renderTableCard("Recent agent_hub log entries", data.rows, ["path","title","source_agent","updated_at"]);
+}
+
+function renderAgents(main, data){
+  let html = '<div class="grid">' +
+    '<div class="tile"><div class="n">' + esc(data.total_items ?? 0) + '</div><div class="l">Total agent_hub items</div></div>' +
+    '</div>';
+  html += '<div class="card"><h3>What this is</h3><p class="muted" style="margin:0">' + esc(data.note || "") + '</p></div>';
+  const bySource = data.by_agent_recent60 || {};
+  const agents = Object.keys(bySource);
+  if (agents.length) {
+    html += '<div class="card"><h3>Active agents (last 60 items)</h3><table><thead><tr><th>Agent</th><th>Items</th><th>Last seen</th></tr></thead><tbody>';
+    agents.sort((a,b) => bySource[b].count - bySource[a].count).forEach(a => {
+      html += '<tr><td>' + esc(a) + '</td><td>' + esc(bySource[a].count) + '</td><td>' + fmtDate(bySource[a].last_seen) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  html += renderTableCard("Recent activity, all agents", data.recent, ["path","kind","title","source_agent","updated_at"]);
+  main.innerHTML = html;
+}
+
+function renderVps(main, data){
+  let html = '<div class="card"><h3>Straight answer</h3><p class="muted" style="margin:0">' + esc(data.honest_note || "") + '</p></div>';
+  const svc = data.services || [];
+  html += '<div class="linkgrid">';
+  svc.forEach(s => {
+    const cls = s.status === "LIVE" ? "live" : s.status === "LAPTOP" ? "laptop" : "manual";
+    html += '<div class="linkcard"><div class="t">' + esc(s.name) + '</div><div class="d">' + esc(s.detail) + '<br><i>' + esc(s.reachable_from) + '</i></div><div class="status ' + cls + '">' + esc(s.status) + '</div></div>';
+  });
+  html += '</div>';
+  const sync = data.memory_sync_latest_by_source || {};
+  const sources = Object.keys(sync);
+  if (sources.length) {
+    html += '<div class="card" style="margin-top:14px"><h3>Memory sync — last update by source</h3><table><thead><tr><th>Source</th><th>Last synced</th></tr></thead><tbody>';
+    sources.forEach(s => { html += '<tr><td>' + esc(s) + '</td><td>' + fmtDate(sync[s]) + '</td></tr>'; });
+    html += '</tbody></table></div>';
+  }
+  html += renderTableCard("Recently synced memory paths", data.recent_synced_paths, ["path","source","updated_at"]);
+  main.innerHTML = html;
+}
+
+function renderData(main, data){
+  let html = '<div class="grid">' +
+    '<div class="tile"><div class="n">' + esc(data.total_tables ?? 0) + '</div><div class="l">Tables tracked</div></div>' +
+    '<div class="tile"><div class="n">' + esc((data.tables_with_data||[]).length) + '</div><div class="l">Tables with rows</div></div>' +
+    '<div class="tile"><div class="n">' + esc((data.empty_tables||[]).length) + '</div><div class="l">Empty tables</div></div>' +
+    '</div>';
+  html += '<div class="card"><h3>What this is</h3><p class="muted" style="margin:0">' + esc(data.note || "") + ' This is the full-inventory check — every table in the Supabase project, not just the ones with a bespoke tab. If something is missing from one system, it shows up here as an empty or errored table.</p></div>';
+  const withData = data.tables_with_data || [];
+  if (withData.length) {
+    html += '<div class="card"><h3>Tables with data (' + withData.length + ')</h3><table><thead><tr><th>Table</th><th>Rows</th></tr></thead><tbody>';
+    withData.forEach(t => { html += '<tr><td>' + esc(t.name) + '</td><td>' + esc(t.count) + '</td></tr>'; });
+    html += '</tbody></table></div>';
+  }
+  const errored = data.errored_tables || [];
+  if (errored.length) {
+    html += '<div class="card"><h3>Errored / renamed / RLS-blocked (' + errored.length + ')</h3><p class="muted" style="margin:0 0 8px">These were in the inventory but the function couldn\'t count them just now — could be renamed, dropped, or newly RLS-restricted. Worth a look if something you expect is here.</p><p>' + errored.map(esc).join(', ') + '</p></div>';
+  }
+  const empty = data.empty_tables || [];
+  if (empty.length) {
+    html += '<div class="card"><h3>Empty tables (' + empty.length + ')</h3><p class="muted" style="margin:0">' + empty.map(esc).join(', ') + '</p></div>';
+  }
+  const pairs = data.duplicate_pairs || [];
+  if (pairs.length) {
+    html += '<div class="card"><h3>Likely duplicate tables — your call, nothing auto-deleted</h3><p class="muted" style="margin:0 0 8px">' + esc(data.duplicates_note || "") + '</p><table><thead><tr><th>Table A</th><th>Rows</th><th>Table B</th><th>Rows</th><th>Why flagged</th></tr></thead><tbody>';
+    pairs.forEach(p => { html += '<tr><td>' + esc(p.a) + '</td><td>' + esc(p.a_count) + '</td><td>' + esc(p.b) + '</td><td>' + esc(p.b_count) + '</td><td class="muted">' + esc(p.note) + '</td></tr>'; });
+    html += '</tbody></table></div>';
+  }
+  const aff = data.affiliate_three_way;
+  if (aff) {
+    html += '<div class="card"><h3>Affiliate links — three tables, not two</h3><table><thead><tr><th>affiliate_links</th><th>b44_affiliatelink</th><th>gadgitech_affiliate_links</th></tr></thead><tbody><tr><td>' + esc(aff.affiliate_links) + '</td><td>' + esc(aff.b44_affiliatelink) + '</td><td>' + esc(aff.gadgitech_affiliate_links) + '</td></tr></tbody></table><p class="muted" style="margin-top:8px">' + esc(aff.note) + '</p></div>';
+  }
+  main.innerHTML = html;
+}
+
+function renderRoundtable(main, data){
+  let html = '<div class="grid"><div class="tile"><div class="n">' + esc(data.council_sessions ?? 0) + '</div><div class="l">Council sessions</div></div></div>';
+  html += '<div class="card"><h3>What this is</h3><p class="muted" style="margin:0">' + esc(data.note || "") + '</p></div>';
+  html += renderTableCard("Round Table messages", data.rows, ["id","advisor","message","created_date"]);
+  main.innerHTML = html;
+}
+
+function renderMarketing(main, data){
+  const counts = data.counts || {};
+  let html = '<div class="card"><h3>What this is</h3><p class="muted" style="margin:0">' + esc(data.note || "") + '</p></div>';
+  html += '<div class="grid">';
+  Object.keys(counts).forEach(k => { html += '<div class="tile"><div class="n">' + esc(counts[k]) + '</div><div class="l">' + esc(k) + '</div></div>'; });
+  html += '</div>';
+  html += renderTableCard("Marketing funnels", data.funnels, ["id","name","stage","status","updated_date"]);
+  main.innerHTML = html;
+}
+
+function renderVault(main, data){
+  let html = '<div class="card"><h3>What this is</h3><p class="muted" style="margin:0">' + esc(data.note || "") + '</p></div>';
+  html += renderTableCard("Credential pointers (never the secret itself)", data.rows, ["path","kind","title","source_agent","updated_at"]);
+  main.innerHTML = html;
+}
+
+function renderOrchestrator(main, data){
+  main.innerHTML = '<div class="card"><h3>Orchestrator</h3><p>' + esc(data.note || "") + '</p><p class="muted">Runs locally (claude/orchestrator.py + PC Desktop copy). Not triggerable from here on purpose — it bills your Anthropic key when run, and this hub never spends without you starting it yourself.</p></div>';
+}
+
+function renderSystems(main){
+  const items = [
+    {t:"incomeutopia.com (this site)", d:"Public storefront — apparel, Pro Kits, AI Services, Field Manual, Insider membership.", href:"https://incomeutopia.com", status:"LIVE"},
+    {t:"This Command Hub", d:"You're in it. Overview / Approvals / Finances / Ideas / Projects / Workflows / Logs / Agents / VPS / Data / Round Table / Social / Marketing / Vault, backed by Supabase edge functions hub-read + hub-api. Data is the full-inventory check (every table, live counts, flagged likely-duplicates) so nothing sits invisible. Vault shows credential POINTERS only — real secrets stay in the agent-vault bucket / your password manager, never on this page.", href:"https://incomeutopia.com/hub.html", status:"LIVE"},
+    {t:"Field Manual Library", d:"341 guides, 100 free, rest paywalled.", href:"https://gadgitech-library.vercel.app", status:"LIVE"},
+    {t:"Printify shop", d:"POD fulfillment for apparel/mugs/etc.", href:"https://gadgitech.printify.me", status:"LIVE"},
+    {t:"Supabase project", d:"gjyisxcrvknsqyzseost — every table, edge function, and the agent_hub shared memory store live here.", href:"https://supabase.com/dashboard/project/gjyisxcrvknsqyzseost", status:"LIVE"},
+    {t:"Vercel team", d:"GAdgiTecHs ArcHiTecTure — deploys both 'g' (this site) and the legacy 'gadgitechincomeutopia' project, same GitHub repo.", href:"https://vercel.com/ga-dgi-tec-hs-arc-hi-tec-ture", status:"LIVE"},
+    {t:"GitHub repo", d:"gmcgarrettcarrgcgc-cloud/gmcgarrettcarr (private) — the one canonical repo behind both Vercel projects. hub.html isn't committed there yet; only deployed manually. Push a copy in to make it survive the next git-triggered deploy. Open lead: PR #6 (branch claude/repository-setup-g919c3) merged a 77-file Base44 export + an internal ops.html into this repo, deliberately excluded from public deploy — needs the github-bridge function (waiting on a GITHUB_TOKEN secret) to confirm whether that branch is actually merged into main or still sitting unmerged.", href:"https://github.com/gmcgarrettcarrgcgc-cloud/gmcgarrettcarr", status:"MANUAL"},
+    {t:"n8n Cloud", d:"gmcgarrettcarr.app.n8n.cloud — WF-04, 32-38 automation. Sign in with your Yahoo login.", href:"https://gmcgarrettcarr.app.n8n.cloud", status:"LIVE"},
+    {t:"Stripe dashboard", d:"Payments, payouts, the 9 active checkout links.", href:"https://dashboard.stripe.com", status:"LIVE"},
+    {t:"OmniRoute", d:"Self-hosted LLM router on the VPS, port 20128 — only reachable through the SSH tunnel script on your laptop (Start-OmniRouteTunnel.ps1). Not reachable from the cloud/this page.", href:"#", status:"LAPTOP"},
+    {t:"StarNet (Rick)", d:"Local agent platform / Overseer on your Dell. Not a web app — open it on that machine.", href:"#", status:"LAPTOP"},
+    {t:"Loops dashboard", d:"Income-research loops (arbitrage/domains/tickets/rental/crypto/options) — VPS Python service, opened via Start-LoopsHome.ps1 (SSH tunnel to 127.0.0.1:8780, unresolved report of 8766 too).", href:"#", status:"LAPTOP"},
+    {t:"Action Plane — Approvals", d:"Loopback-only local server, port 8767. Second, harder-gated approve/deny surface for the marketing queue, run from action-gate.js on your own machine.", href:"http://127.0.0.1:8767", status:"LAPTOP"},
+    {t:"Action Plane — Action Gate", d:"Loopback-only local server, port 8769. Anything that spends money routes through here with a typed y confirmation.", href:"http://127.0.0.1:8769", status:"LAPTOP"},
+    {t:"Legacy / to retire", d:"gadgitech-hub.html, gadgitech-post-studio.html, and 11 duplicate gadgitech-marketing*.html files on your desktop — superseded by this page. Safe to archive next time a desktop session is connected.", href:"#", status:"MANUAL"},
+  ];
+  let html = '<div class="card"><h3>Every hub, repo, and command place in the stack</h3><p class="muted" style="margin-top:-4px">These are separate platforms with their own logins — this page can\'t give you one universal sign-in across Supabase/Vercel/GitHub/Stripe/n8n/your laptop, so it links out to each instead of pretending to merge them.</p></div>';
+  html += '<div class="linkgrid">';
+  items.forEach(it => {
+    const cls = it.status === "LIVE" ? "live" : it.status === "LAPTOP" ? "laptop" : "manual";
+    html += '<a class="linkcard" href="' + esc(it.href) + '" target="_blank" style="text-decoration:none;color:inherit;display:block">' +
+      '<div class="t">' + esc(it.t) + '</div><div class="d">' + esc(it.d) + '</div><div class="status ' + cls + '">' + esc(it.status) + '</div></a>';
+  });
+  html += '</div>';
+  main.innerHTML = html;
+}
+
+$("#unlockBtn").addEventListener("click", unlock);
+$("#keyInput").addEventListener("keydown", e => { if (e.key === "Enter") unlock(); });
+$("#lockBtn").addEventListener("click", lock);
+
+if (hubKey) {
+  hubReadFetch("overview").then(() => {
+    $("#gate").style.display = "none";
+    $("#app").style.display = "block";
+    renderTabs();
+    loadTab(activeTab);
+  }).catch(() => {
+    localStorage.removeItem(KEY_STORE);
+    hubKey = "";
+  });
+}
+</script>
+</body>
+</html>
