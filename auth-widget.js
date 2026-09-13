@@ -54,27 +54,33 @@
   function cartTotal(){ return getLocalCart().reduce(function(sum, it){ return sum + (Number(it.price)||0) * (it.qty||1); }, 0); }
   function cartCount(){ return getLocalCart().reduce(function(sum, it){ return sum + (it.qty||1); }, 0); }
 
+  function ensureDock(){
+    var dock = document.getElementById("gt-account-dock");
+    if (dock) return dock;
+    dock = document.createElement("div");
+    dock.id = "gt-account-dock";
+    // Bottom-right dock — keeps Sign-in / Cart off the sticky header tabs
+    dock.style.cssText = "position:fixed;bottom:18px;right:12px;z-index:99998;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 24px)";
+    document.body.appendChild(dock);
+    return dock;
+  }
+
   function ensureCartPill(){
     var pill = document.getElementById("gt-cart-pill");
     if (pill) return pill;
     pill = document.createElement("button");
     pill.id = "gt-cart-pill";
-    pill.style.cssText = "position:fixed;top:12px;right:150px;z-index:99998;background:#0c1a14;border:1px solid #1c3328;color:#eaf5ee;border-radius:20px;padding:8px 14px;font:700 13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);display:flex;align-items:center;gap:6px";
+    pill.type = "button";
+    pill.style.cssText = "position:static;background:#0c1a14;border:1px solid #1c3328;color:#eaf5ee;border-radius:20px;padding:8px 14px;font:700 13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);display:flex;align-items:center;gap:6px";
     pill.onclick = function(){ cartPanelOpen = !cartPanelOpen; renderCartPanel(); };
-    document.body.appendChild(pill);
+    ensureDock().appendChild(pill);
     return pill;
   }
 
   function renderCartPill(){
     var pill = ensureCartPill();
     var n = cartCount();
-    pill.innerHTML = "🛒 Cart" + (n ? ' <span style="background:#3fe0a0;color:#04211a;border-radius:10px;padding:1px 7px;font-size:11.5px">' + n + "</span>" : "");
-    // reposition left of the account bar if present, else keep default
-    var bar = document.getElementById("gt-auth-bar");
-    if (bar) {
-      var w = bar.offsetWidth || 170;
-      pill.style.right = (12 + w + 10) + "px";
-    }
+    pill.innerHTML = "Cart" + (n ? ' <span style="background:#3fe0a0;color:#04211a;border-radius:10px;padding:1px 7px;font-size:11.5px">' + n + "</span>" : "");
   }
 
   function flashAdded(){
@@ -90,7 +96,7 @@
     if (!panel) {
       panel = document.createElement("div");
       panel.id = "gt-cart-panel";
-      panel.style.cssText = "position:fixed;top:56px;right:12px;z-index:99999;background:#0c1a14;border:1px solid #1c3328;border-radius:14px;padding:14px;width:300px;max-width:calc(100vw - 24px);max-height:70vh;overflow:auto;color:#eaf5ee;font:13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 16px 40px rgba(0,0,0,.5)";
+      panel.style.cssText = "position:fixed;bottom:70px;right:12px;top:auto;z-index:99999;background:#0c1a14;border:1px solid #1c3328;border-radius:14px;padding:14px;width:300px;max-width:calc(100vw - 24px);max-height:60vh;overflow:auto;color:#eaf5ee;font:13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 16px 40px rgba(0,0,0,.5)";
       document.body.appendChild(panel);
     }
     var items = getLocalCart();
@@ -153,8 +159,8 @@
     if (!bar) {
       bar = document.createElement("div");
       bar.id = "gt-auth-bar";
-      bar.style.cssText = "position:fixed;top:12px;right:12px;z-index:99997;font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;";
-      document.body.appendChild(bar);
+      bar.style.cssText = "position:static;font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;";
+      ensureDock().appendChild(bar);
     }
 
     function renderAuth(){
